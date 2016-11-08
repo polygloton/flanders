@@ -309,49 +309,8 @@
          (->reference this :leaf)))
   (->short-description [_] "Keyword"))
 
-(defn find-maps [ddl-root]
-  (loop [current-map-loc (fu/->ddl-zip (assoc ddl-root
-                                              :anchor "top"))
-         maps-to-walk []
-         result-maps []
-         map-counter 1]
-    (let [node (some-> current-map-loc z/node)
-          root-node (some-> current-map-loc z/root)]
-      (cond
-        ;; terminate
-        (nil? current-map-loc)
-        result-maps
-
-        ;; end of current map, go to next map
-        (z/end? current-map-loc)
-        (recur (some-> maps-to-walk first fu/->ddl-zip)
-               (rest maps-to-walk)
-               (conj result-maps (z/root current-map-loc))
-               map-counter)
-
-        ;; map that is not the root, push it
-        (and (instance? MapType node)
-             (not= node root-node))
-        (let [text (->short-description node)
-              map-anchor (str "map" map-counter)
-              ref-anchor (str map-anchor "-ref")]
-          (recur (z/next (z/replace current-map-loc
-                                    (->ReferenceNode text ref-anchor map-anchor)))
-                 (conj maps-to-walk (assoc node
-                                           :anchor map-anchor
-                                           :jump-anchor ref-anchor))
-                 result-maps
-                 (inc map-counter)))
-
-        ;; else go to next location
-        :else
-        (recur (z/next current-map-loc)
-               maps-to-walk
-               result-maps
-               map-counter )))))
-
 (defn ->markdown [ddl-root]
-  (let [[first-map & rest-maps] (find-maps ddl-root)]
+  (let [[first-map & rest-maps] (find-maps fu/ddl-root)]
     (loop [current-map-loc (fu/->ddl-zip first-map)
            maps-to-walk rest-maps
            markdown []]
