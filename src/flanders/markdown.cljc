@@ -59,11 +59,14 @@
               parts
               ["\n\n"])))
 
-(defn- mkd-symbol [x]
-  (str "`" (if (keyword? x)
-             (name x)
-             (pr-str x))
-       "`"))
+(defn- mkd-symbol
+  ([schema]
+   (mkd-symbol schema (pr-str schema)))
+  ([schema schema-str]
+   (str "`" (if (keyword? schema)
+              (name schema)
+              schema-str)
+        "`")))
 
 (defn- ->entry-header [{:keys [key type]} loc]
   (->header loc
@@ -84,17 +87,18 @@
       (str "* " type-str " Value\n"))))
 
 (defn- ->schema-str [this loc]
-  (let [schema (pr-str (fs/->schema-at-loc this loc))
-        schema (cond
-                 (str/starts-with? schema "(enum") "(enum ...)"
-                 (= "java.lang.String" schema) "Str"
-                 (= "java.lang.Boolean" schema) "Bool"
-                 :else schema)]
+  (let [schema (fs/->schema-at-loc this loc)
+        schema-str (pr-str schema)
+        schema-str (cond
+                     (str/starts-with? schema-str "(enum") "(enum ...)"
+                     (= "java.lang.String" schema-str) "Str"
+                     (= "java.lang.Boolean" schema-str) "Bool"
+                     :else schema-str)]
     (str "  * Plumatic Schema: "
          (if (fp/sequential? loc)
-           (str "[" (mkd-symbol schema)
+           (str "[" (mkd-symbol schema schema-str)
                 "]")
-           (mkd-symbol schema))
+           (mkd-symbol schema schema-str))
          "\n")))
 
 (defn- ->values [{v :values}]

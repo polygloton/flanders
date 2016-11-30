@@ -28,11 +28,11 @@ description text
 * This entry is required
 
 * Keyword Key
-  * Plumatic Schema: `\"type\"`
+  * Plumatic Schema: `type`
 
 * String Value
-  * Plumatic Schema: `\"(enum ...)\"`
+  * Plumatic Schema: `(enum ...)`
   * Must equal: \"actor\"
 "
-           
+
            (sut/->markdown Actor)))))
